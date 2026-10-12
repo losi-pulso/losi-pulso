@@ -1,46 +1,65 @@
-LOSI PULSO V2 — Atualizar seu aplicativo já instalado no iPhone
-=============================================================
-Repositório existente: https://github.com/losi-pulso/losi-pulso
-Aplicativo: https://losi-pulso.github.io/losi-pulso/
+LOSI PULSO V3 — VÍDEOS + MÚSICAS MP3 + DOWNLOAD OFFLINE
+=======================================================
 
-1. No Windows, baixe e EXTRAIA o ZIP 'Losi_Pulso_V2_Arquivos_para_GitHub.zip'.
-2. Acesse o repositório acima, na aba Code.
-3. Clique em Add file > Upload files.
-4. Abra a pasta extraída e selecione os ARQUIVOS (Ctrl+A), não a pasta nem o ZIP.
-5. Arraste esses arquivos para o GitHub. Confirme a substituição dos arquivos de nomes iguais, se necessário.
-6. Clique em Commit changes.
-7. Acesse Settings > Pages e mantenha main / (root). Já estava configurado.
-8. Aguarde de 1 a 5 minutos e abra o endereço do aplicativo no Safari.
-9. Se o aplicativo antigo aparecer no iPhone, feche-o completamente e reabra.
-   Se continuar antigo, abra o endereço no Safari, atualize e, se necessário,
-   remova o ícone antigo e adicione-o novamente à Tela de Início.
+ENDEREÇOS QUE JÁ SÃO SEUS
+Repositório GitHub: https://github.com/losi-pulso/losi-pulso
+Aplicativo iPhone: https://losi-pulso.github.io/losi-pulso/
 
-BACKEND JÁ PREPARADO
-A base SQL da versão 2 foi criada no projeto Supabase que já está
-na sua conta, chamado 'Pulso Losi'. O bucket privado 'lp-set-videos'
-e a lista de moderação também estão ativos.
+ATUALIZAR SEM EXPO GO, NETLIFY OU NOVA CONTA
+1. No Windows, baixe e EXTRAIA o ZIP "Losi_Pulso_v3_Atualizar_GitHub.zip".
+2. Abra https://github.com/losi-pulso/losi-pulso
+3. Vá em Code > Add file > Upload files.
+4. Selecione TODOS os arquivos extraídos DENTRO DA PASTA, não a pasta nem o ZIP.
+   IMPORTANTE: index.html, app.js, sets.js, mp3.js, offline.js, offline.css,
+   styles.css, sets.css, config.js, sw.js, audio-engine.js, manifest.webmanifest
+   e os ícones devem ficar diretamente na raiz do repositório.
+5. Finalize em Commit changes. Os arquivos existentes serão atualizados.
+6. Settings > Pages já deve estar configurado em main / (root). Não mude.
+7. Aguarde alguns minutos. Abra o endereço do aplicativo no Safari do iPhone.
+8. Feche e abra de novo o aplicativo instalado para carregar a versão nova.
+   Se houver cache antigo, atualize a página no Safari e volte a abrir o app.
+   NUNCA limpe os dados do Safari se quiser manter downloads offline.
 
-REGISTRAR CONTAS
-Supabase > Authentication > Providers > Email: confirme se o cadastro
-por e-mail está habilitado. Para confirmação por e-mail, confira se
-https://losi-pulso.github.io/losi-pulso/ consta em
-Authentication > URL Configuration > Redirect URLs.
+COMO O USUÁRIO BAIXA
+- No app, acesse Sets > Vídeos e toque em "Baixar vídeo offline" num set aprovado.
+- Em Sets > MP3, toque em "Baixar offline" numa faixa aprovada.
+- Abra Sets > Offline, ou Biblioteca > Downloads offline.
+- Toque em Reproduzir mesmo com modo avião.
+- Exclua os arquivos por meio do botão × da biblioteca offline.
+- MP3 IMPORTADO PELO PRÓPRIO USUÁRIO: Biblioteca > Adicionar; estes arquivos
+  já ficam localmente armazenados na biblioteca pessoal anterior.
 
-ADMINISTRADOR
-O sistema reaproveita os usuários autorizados em public.admin_users.
-Entre no aplicativo com a conta de administrador que já pertence à
-lista para acessar a aba 'Aprovar'. Se entrar com outra conta, a aba
-não aparece e essa conta não poderá aprovar vídeos.
+COMO O DJ PUBLICA MP3
+- Sets > + Enviar vídeo (para entrar ou criar conta, se necessário).
+- Sets > MP3 > + Publicar. O MP3 ficará pendente.
+- Conta administradora: Sets > MP3 > Aprovar para liberar reprodução/download.
+- A conta admin deve constar na tabela public.admin_users do Supabase.
 
-LIMITE DE VÍDEO
-O bucket foi configurado para até 50 MB por arquivo.
-Arquivos maiores do que isso requerem um plano/armazenamento maior.
-Recomenda-se vídeo MP4 com H.264/AAC.
+LIMITES E CUIDADOS
+- Esta v3 limita downloads, uploads de vídeo e de MP3 a 50 MB por arquivo.
+- Supabase guarda os vídeos e MP3 na nuvem; GitHub Pages hospeda apenas o app.
+- Downloads offline ficam no IndexedDB da instalação PWA, NÃO na pasta Arquivos.
+- O iOS pode apagar dados para economizar armazenamento: NÃO são backups permanentes.
+- O download OFFLINE exige internet inicialmente; a reprodução depois não exige.
+- Vídeos externos incorporados do YouTube NÃO estão disponíveis para download.
+- Downloads de terceiros exigem autorização dos respectivos titulares de direitos.
+- Se a publicação estiver aberta a todos, inclua termos de uso, antispam,
+  denúncias de conteúdo e uma política de direitos autorais antes de produção.
 
-PONTOS IMPORTANTES
-- O GitHub Pages hospeda a interface, NÃO os vídeos.
-- O Supabase guarda contas, cadastro dos vídeos e arquivos privados.
-- O público só recebe links temporários de vídeos aprovados.
-- Vídeos sem autorização de música, imagem ou execução não devem ser publicados.
-- Em uma plataforma aberta ao público será necessário implementar fluxo
-  de denúncias, termos de uso, controle antispam e política de direitos autorais.
+BACKEND PRONTO
+Foi executada uma migração de MP3 no seu projeto Supabase "Pulso Losi".
+Bucket privado lp-mp3 e tabela lp_mp3_tracks já configurados.
+NÃO execute os SQLs novamente no projeto atual.
+Verifique Authentication > URL Configuration > Redirect URLs:
+  https://losi-pulso.github.io/losi-pulso/
+
+COMO TESTAR NO IPHONE
+1. Entre em uma conta DJ e envie um MP3 pequeno do qual você tem direitos.
+2. Entre como administrador e aprove o MP3.
+3. No catálogo MP3, toque em Baixar offline.
+4. Abra Offline, ligue o MODO AVIÃO e toque em ▶ na faixa baixada.
+5. Repita com um vídeo MP4 curto aprovado.
+6. Reabra o app offline para verificar se a biblioteca persiste.
+
+AVISO: a estrutura e a sintaxe foram validadas, mas o teste real de login,
+upload e modo avião no seu iPhone ainda depende de você executar os passos.

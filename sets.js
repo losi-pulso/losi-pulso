@@ -1,4 +1,4 @@
-/* LOSI PULSO v2 | Cloud DJ video sets, authenticação e moderação via Supabase */
+/* LOSI PULSO v3 | Cloud DJ video sets, authenticação e moderação via Supabase */
 (() => {
 'use strict';
 const cfg = window.LOSI_SUPABASE || {};
@@ -17,12 +17,13 @@ function client(){
  return sb;
 }
 function info(s,bad=false){data.message=s;data.error=bad;render();}
-function setTab(tab){data.tab=tab;data.message='';render();}
+function setTab(tab){data.tab=tab;data.message='';render();if(tab==='offline')window.LosiOffline?.refresh();if(tab==='music')window.LosiAudio?.load(data.user,data.admin);}
 function status(s){return ({pending:'Aguardando aprovação',approved:'Publicado',rejected:'Recusado'})[s] || s;}
 function niceDate(s){try{return new Date(s).toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'});}catch{return ''}}
 function card(v,scope){const isMine=scope==='mine', isMod=scope==='moderate';
  return `<article class="set-card"><button class="set-visual" type="button" data-set-action="watch" data-id="${e(v.id)}" aria-label="Assistir ${e(v.title)}"><span class="set-art-graphic"><span class="set-turntable"></span><span class="set-art-glow"></span></span><span class="set-play">▶</span><span class="set-overlay-tag">${e(v.genre)}</span></button>
  <div class="set-meta"><span class="set-artist">${e(v.artist)}</span><strong>${e(v.title)}</strong><small>${e(v.description || 'DJ set gravado')}</small><div class="set-bottom"><span>${niceDate(v.created_at)}</span>${isMine||isMod?`<span class="set-pill ${e(v.status)}">${status(v.status)}</span>`:'<span class="set-pill approved">SET LIBERADO</span>'}</div>
+ ${v.status==='approved'?`<button class="primary-button set-offline-cta" data-set-action="download-video" data-id="${e(v.id)}">↓ Baixar vídeo offline</button>`:''}
  ${isMine&&v.status==='rejected'&&v.review_note?`<p class="set-review-note">Motivo: ${e(v.review_note)}</p>`:''}
  ${isMine&&v.status!=='approved'?`<button class="set-minor" data-set-action="delete" data-id="${e(v.id)}">Excluir envio</button>`:''}
  ${isMod?`<div class="set-review-controls"><button class="primary-button" data-set-action="approve" data-id="${e(v.id)}">✓ Aprovar</button><button class="secondary-button" data-set-action="reject" data-id="${e(v.id)}">Recusar</button></div>`:''}
@@ -55,16 +56,16 @@ function browse(){let videos=data.gallery.filter(v=>(data.filter==='Todos'||v.ge
 function mine(){return `<div class="eyebrow">CONTA DJ / MEUS ENVIOS</div><h2 class="heading">Meu backstage.</h2><p class="subcopy">Acompanhe o status dos vídeos que você enviou.</p>${data.mine.length?`<div class="set-card-grid">${data.mine.map(v=>card(v,'mine')).join('')}</div>`:`<div class="set-empty"><strong>Nenhum set enviado ainda.</strong><p>Seu primeiro vídeo pode estar a um upload de distância.</p><button class="primary-button" data-set-action="tab" data-tab="upload">Enviar meu primeiro set</button></div>`}`}
 function moderate(){return `<div class="eyebrow">ÁREA RESTRITA / ADMIN</div><h2 class="heading">Painel de curadoria.</h2><p class="subcopy">Assista antes de aprovar. Apenas os aprovados serão visíveis a todos.</p><div class="set-mod-count"><strong>${data.pending.length}</strong> aguardando análise</div>${data.pending.length?`<div class="set-card-grid">${data.pending.map(v=>card(v,'moderate')).join('')}</div>`:`<div class="set-empty"><strong>Fila zerada.</strong><p>Nenhum envio aguardando revisão.</p></div>`}`}
 function view(){const user=data.user;
- return `<section class="sets-page"><div class="set-banner"><span class="set-banner-icon">▰</span><div><strong>LOSI PULSO <em>SETS</em></strong><small>DJ VIDEO PLATFORM / V2</small></div><span class="set-banner-indicator">●</span></div>
- <div class="set-tabs"><button class="${data.tab==='discover'?'active':''}" data-set-action="tab" data-tab="discover">Explorar</button><button class="${data.tab==='upload'?'active':''}" data-set-action="tab" data-tab="upload">+ Enviar</button>${user?`<button class="${data.tab==='mine'?'active':''}" data-set-action="tab" data-tab="mine">Meus sets</button>`:''}${data.admin?`<button class="${data.tab==='moderate'?'active':''}" data-set-action="tab" data-tab="moderate">Aprovar ${data.pending.length?'('+data.pending.length+')':''}</button>`:''}</div>
+ return `<section class="sets-page"><div class="set-banner"><span class="set-banner-icon">▰</span><div><strong>LOSI PULSO <em>SETS</em></strong><small>VÍDEOS + MP3 + OFFLINE / V3</small></div><span class="set-banner-indicator">●</span></div>
+ <div class="set-tabs"><button class="${data.tab==='discover'?'active':''}" data-set-action="tab" data-tab="discover">Vídeos</button><button class="${data.tab==='music'?'active':''}" data-set-action="tab" data-tab="music">♫ MP3</button><button class="${data.tab==='offline'?'active':''}" data-set-action="tab" data-tab="offline">↓ Offline</button><button class="${data.tab==='upload'?'active':''}" data-set-action="tab" data-tab="upload">+ Enviar vídeo</button>${user?`<button class="${data.tab==='mine'?'active':''}" data-set-action="tab" data-tab="mine">Meus sets</button>`:''}${data.admin?`<button class="${data.tab==='moderate'?'active':''}" data-set-action="tab" data-tab="moderate">Aprovar ${data.pending.length?'('+data.pending.length+')':''}</button>`:''}</div>
  ${data.message?`<div class="set-alert ${data.error?'error':''}" role="status">${e(data.message)}</div>`:''}
  ${initError?`<div class="set-alert error">${e(initError)}</div>`:''}
- ${data.tab==='discover'?browse():!user?authForm():data.tab==='upload'?uploadForm():data.tab==='mine'?mine():data.admin?moderate():browse()}
+ ${data.tab==='offline'?(window.LosiOffline?.view()||'Offline indisponível'):data.tab==='music'?(window.LosiAudio?.view()||'MP3 indisponível'):data.tab==='discover'?browse():!user?authForm():data.tab==='upload'?uploadForm():data.tab==='mine'?mine():data.admin?moderate():browse()}
  ${user?`<div class="set-signed-in">Conectado: <b>${e(user.email||'DJ')}</b><button data-set-action="logout">Sair</button></div>`:''}
  <div class="set-footnote">Sem publicação automática • Conteúdo sujeito à análise • Respeite direitos autorais e de imagem.</div></section>`;
 }
 function render(){if(root() && document.querySelector('.sets-page'))root().innerHTML=view();}
-async function load(){const c=client(); if(!c){render();return;} data.busy=true;render();
+async function load(){if(!navigator.onLine){render();return;}const c=client(); if(!c){render();return;} data.busy=true;render();
  try{
   const {data:auth,error:authError}=await c.auth.getUser(); data.user=authError?null:auth.user;
   data.admin=!!data.user && (await c.rpc('lp_is_admin')).data===true;
@@ -75,7 +76,7 @@ async function load(){const c=client(); if(!c){render();return;} data.busy=true;
   if(data.admin){const pend=await c.from('lp_video_sets').select('*').eq('status','pending').order('created_at',{ascending:true}).limit(100);if(pend.error)throw pend.error;data.pending=pend.data||[];}
   else data.pending=[];
   if(!data.user&&['mine','moderate'].includes(data.tab))data.tab='discover';
-  data.refreshed=Date.now();
+  data.refreshed=Date.now();window.LosiAudio?.load(data.user,data.admin);
  }catch(err){data.message='Falha ao buscar vídeos: '+String(err.message||err);data.error=true;}
  finally{data.busy=false;render();}
 }
@@ -91,9 +92,9 @@ async function authenticate(form,mode){const c=client();if(!c){info(initError,tr
 let tusLoader=null;
 function ensureTus(){if(window.tus?.Upload)return Promise.resolve(window.tus);if(tusLoader)return tusLoader;
  tusLoader=new Promise((res,rej)=>{const script=document.createElement('script');script.src='https://cdn.jsdelivr.net/npm/tus-js-client@4.1.0/dist/tus.min.js';script.onload=()=>window.tus?.Upload?res(window.tus):rej(new Error('Biblioteca de upload indisponível'));script.onerror=()=>rej(new Error('Sem acesso ao servidor de upload'));document.head.appendChild(script)}).catch(err=>{tusLoader=null;throw err});return tusLoader;}
-async function tusUpload(file,path){const c=client(),tus=await ensureTus(),{data:{session}}=await c.auth.getSession();if(!session)throw Error('Sessão expirada. Entre novamente.');
+async function tusUpload(file,path,targetBucket=BUCKET,contentType=null,progressId='set-progress'){const c=client(),tus=await ensureTus(),{data:{session}}=await c.auth.getSession();if(!session)throw Error('Sessão expirada. Entre novamente.');
  const host=new URL(cfg.url).hostname.split('.')[0]; const endpoint=`https://${host}.storage.supabase.co/storage/v1/upload/resumable`;
- return new Promise((res,rej)=>{const task=new tus.Upload(file,{endpoint,retryDelays:[0,3000,5000,10000,20000],headers:{authorization:`Bearer ${session.access_token}`,'x-upsert':'false'},uploadDataDuringCreation:true,removeFingerprintOnSuccess:true,metadata:{bucketName:BUCKET,objectName:path,contentType:file.type || (path.endsWith('.mov')?'video/quicktime':path.endsWith('.webm')?'video/webm':'video/mp4'),cacheControl:'3600'},chunkSize:6*1024*1024,onError:rej,onProgress:(uploaded,total)=>{const node=document.getElementById('set-progress');if(node){const pc=Math.round(uploaded/Math.max(total,1)*100);node.innerHTML=`<div class="set-progress-track"><span style="width:${pc}%"></span></div><small>Enviando vídeo: ${pc}%</small>`;}},onSuccess:res});task.findPreviousUploads().then(previous=>{if(previous.length)task.resumeFromPreviousUpload(previous[0]);task.start()}).catch(rej)});
+ return new Promise((res,rej)=>{const task=new tus.Upload(file,{endpoint,retryDelays:[0,3000,5000,10000,20000],headers:{authorization:`Bearer ${session.access_token}`,'x-upsert':'false'},uploadDataDuringCreation:true,removeFingerprintOnSuccess:true,metadata:{bucketName:targetBucket,objectName:path,contentType:contentType || file.type || (path.endsWith('.mov')?'video/quicktime':path.endsWith('.webm')?'video/webm':'video/mp4'),cacheControl:'3600'},chunkSize:6*1024*1024,onError:rej,onProgress:(uploaded,total)=>{const node=document.getElementById(progressId);if(node){const pc=Math.round(uploaded/Math.max(total,1)*100);node.innerHTML=`<div class="set-progress-track"><span style="width:${pc}%"></span></div><small>Enviando arquivo: ${pc}%</small>`;}},onSuccess:res});task.findPreviousUploads().then(previous=>{if(previous.length)task.resumeFromPreviousUpload(previous[0]);task.start()}).catch(rej)});
 }
 async function upload(form){if(data.busy)return;const c=client(),file=form.elements.video.files[0];if(!data.user)return info('Entre na sua conta primeiro.',true);
  if(!file)return info('Escolha um vídeo.',true);const ext=(file.name.split('.').pop()||'').toLowerCase();if(!['mp4','mov','webm'].includes(ext))return info('Use vídeo MP4, MOV ou WebM.',true);
@@ -136,6 +137,7 @@ document.addEventListener('click', async ev=>{
  if(a==='tab'){setTab(b.dataset.tab);if(!initialized){initialized=true;load();}return;}
  if(a==='filter'){data.filter=b.dataset.genre;render();return;}
  if(a==='watch')return watch(id);
+ if(a==='download-video'){const v=data.gallery.find(x=>x.id===id);if(v)window.LosiOffline?.save('video',v,client(),BUCKET);return;}
  if(a==='close-video'){document.querySelector('#lp-video-modal')?.remove();document.body.style.overflow='';return;}
  if(a==='approve')return review(id,'approved');
  if(a==='reject')return review(id,'rejected');
@@ -144,5 +146,5 @@ document.addEventListener('click', async ev=>{
 });
 document.addEventListener('input',ev=>{if(ev.target.id!=='set-search')return;data.query=ev.target.value;const p=ev.target.selectionStart;render();const q=document.querySelector('#set-search');q?.focus();try{q?.setSelectionRange(p,p)}catch{}});
 document.addEventListener('submit',ev=>{if(ev.target.id==='set-auth-form'){ev.preventDefault();const mode=ev.submitter?.value||'login';authenticate(ev.target,mode);}else if(ev.target.id==='set-upload-form'){ev.preventDefault();upload(ev.target);}});
-window.LosiSets={view,load};
+window.LosiSets={view,load,client,uploadToStorage:tusUpload,redraw:render,currentTab:()=>data.tab,openOffline:()=>setTab('offline')};
 })();

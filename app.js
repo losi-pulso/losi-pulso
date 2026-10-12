@@ -92,6 +92,7 @@ function viewLibrary(){
  const liked=allTracks().filter(t=>state.fav.has(t.id));
  return `<div class="eyebrow">SEU UNIVERSO SONORO</div><h2 class="heading">Minha biblioteca.</h2><p class="subcopy">Seu som, do seu jeito, salvo neste dispositivo.</p>
  <div class="stats-strip"><div class="stat-card"><strong class="stat-number">${state.fav.size}</strong><span class="stat-label">Favoritos</span></div><div class="stat-card"><strong class="stat-number">${state.playlists.length}</strong><span class="stat-label">Playlists</span></div><div class="stat-card"><strong class="stat-number">${state.uploads.length}</strong><span class="stat-label">Meus áudios</span></div></div>
+ <button class="offline-library-shortcut" data-action="go-offline"><span>↓</span><div><strong>Downloads offline</strong><small>Vídeos e MP3 salvos neste aparelho</small></div><b>ABRIR →</b></button>
  <div class="section-head"><h3 class="section-title">Suas playlists</h3><button class="text-button" data-action="create-playlist">${ico('plus',14)} Criar</button></div><div class="playlist-grid"><button class="playlist-card create" data-action="create-playlist"><span class="playlist-symbol">${ico('plus',20)}</span><strong>Nova playlist</strong><small>Organize sua vibe</small></button>${state.playlists.map(playlistCard).join('')}</div>
  <div class="section-head"><h3 class="section-title">Seus arquivos</h3><button class="text-button" data-action="upload">Adicionar ${ico('plus',14)}</button></div><div class="upload-zone"><span class="upload-icon">${ico('upload',21)}</span><div><strong>Importe suas músicas</strong><p>MP3, WAV, M4A e outros áudios aceitos pelo iPhone.</p></div><button class="icon-button" data-action="upload" aria-label="Importar arquivos">${ico('plus',21)}</button></div>
  <input id="audio-upload" type="file" accept="audio/*,.mp3,.m4a,.wav,.aac,.flac" multiple hidden>
@@ -104,9 +105,9 @@ function viewProfile(){return `<div class="eyebrow">BACKSTAGE / PERFIL</div><h2 
  <div class="menu-row">${ico('radio',20)}<div>Player de música eletrônica</div><span>Funcionando</span></div>
  <div class="menu-row">${ico('library',20)}<div>Playlists e favoritos</div><span>Neste iPhone</span></div>
  <div class="menu-row">${ico('upload',20)}<div>Importar arquivos de áudio</div><span>Local</span></div>
- <div class="menu-row">${ico('video',20)}<div>Sets em vídeo e cadastro de DJs</div><span>Versão 2</span></div>
+ <div class="menu-row">${ico('video',20)}<div>Sets em vídeo e músicas MP3</div><span>Versão 3</span></div>
  <div class="menu-row">${ico('headphones',20)}<div>Mural pessoal de links</div><span>${state.posts.length} salvo(s)</span></div>
- <div class="note-box"><strong style="color:var(--green)">LOSI PULSO / VERSÃO 2.0</strong><br>Na aba Sets, DJs podem criar contas e enviar vídeos, com aprovação de administradores. A biblioteca musical e as playlists permanecem salvas neste aparelho.</div>
+ <div class="note-box"><strong style="color:var(--green)">LOSI PULSO / VERSÃO 3.0</strong><br>Na aba Sets, DJs podem enviar vídeos e MP3 para aprovação. Baixe conteúdos aprovados na área Offline para usar sem internet. A biblioteca musical e as playlists permanecem salvas neste aparelho.</div>
  <button class="secondary-button" style="margin-top:20px" data-action="about-install">${ico('info',15)} Como instalar no iPhone</button>`}
 const nav=[['home','Início','home'],['explore','Explorar','search'],['sets','Sets','video'],['library','Biblioteca','library'],['profile','Perfil','user']];
 function renderNav(){$('#bottom-nav').innerHTML=nav.map(([page,label,icon])=>`<button class="nav-item ${state.page===page?'active':''}" data-action="nav" data-page="${page}" ${state.page===page?'aria-current="page"':''}>${ico(icon)}<span>${label}</span></button>`).join('')}
@@ -189,6 +190,7 @@ function handleAction(button){const action=button.dataset.action,id=button.datas
  case 'add-existing-playlist':addExistingPlaylist(id);break;
  case 'dismiss-sheet':state.sheet=null;renderOverlays();break;
  case 'upload':$('#audio-upload')?.click();break;
+ case 'go-offline':navigate('sets');window.LosiSets?.openOffline();break;
  case 'open-playlist':state.playlistOpen=id;renderMain();window.scrollTo(0,0);break;
  case 'close-playlist':state.playlistOpen=null;renderMain();break;
  case 'play-playlist':{const p=state.playlists.find(p=>p.id===id);if(p&&p.ids.length)playTrack(p.ids[0],p.ids.filter(id=>!!getTrack(id)));break}
