@@ -7,11 +7,12 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="LOSI PULSO">
-  <meta name="description" content="LOSI PULSO — música eletrônica sem pausa. Descubra, ouça e organize suas sessões.">
+  <meta name="description" content="LOSI PULSO — música eletrônica sem pausa. Descubra DJs, publique sets em vídeo e viva a música eletrônica.">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="icon-192.png">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="sets.css">
   <title>LOSI PULSO — Música eletrônica sem pausa</title>
 </head>
 <body>
@@ -30,7 +31,10 @@
     <div id="overlays"></div>
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
   </div>
-  <script src="audio-engine.js"></script>
-  <script src="app.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script defer src="config.js"></script>
+  <script defer src="audio-engine.js"></script>
+  <script defer src="sets.js"></script>
+  <script defer src="app.js"></script>
 </body>
 </html>

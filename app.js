@@ -43,6 +43,7 @@ const icons={
   trash:'<path d="M4 7h16M10 3h4m-8 4 1 14h10l1-14M10 11v6m4-6v6"/>',
   info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v5m0-9v.5"/>',
   spark:'<path d="m12 2 2.2 7.8L22 12l-7.8 2.2L12 22l-2.2-7.8L2 12l7.8-2.2z"/>',
+  video:'<rect x="2" y="5" width="15" height="14" rx="2"/><path d="m17 10 5-3v10l-5-3z"/>',
   radio:'<circle cx="12" cy="12" r="2"/><path d="M5 5a10 10 0 0 0 0 14M19 5a10 10 0 0 1 0 14M8 8a6 6 0 0 0 0 8m8-8a6 6 0 0 1 0 8"/>'
 };
 const ico=(name,size=20)=>`<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${icons[name]||''}</svg>`;
@@ -103,13 +104,13 @@ function viewProfile(){return `<div class="eyebrow">BACKSTAGE / PERFIL</div><h2 
  <div class="menu-row">${ico('radio',20)}<div>Player de música eletrônica</div><span>Funcionando</span></div>
  <div class="menu-row">${ico('library',20)}<div>Playlists e favoritos</div><span>Neste iPhone</span></div>
  <div class="menu-row">${ico('upload',20)}<div>Importar arquivos de áudio</div><span>Local</span></div>
- <div class="menu-row">${ico('spark',20)}<div>Publicação e contas online</div><span>Próxima etapa</span></div>
+ <div class="menu-row">${ico('video',20)}<div>Sets em vídeo e cadastro de DJs</div><span>Versão 2</span></div>
  <div class="menu-row">${ico('headphones',20)}<div>Mural pessoal de links</div><span>${state.posts.length} salvo(s)</span></div>
- <div class="note-box"><strong style="color:var(--green)">LOSI PULSO / VERSÃO 1.0</strong><br>Este protótipo funciona sem login ou servidor. Os sons de exemplo são demonstrações geradas pelo próprio aplicativo, não gravações de DJs. Playlists, favoritos e áudios importados ficam neste dispositivo. Para publicar músicas para outras pessoas, a próxima versão precisa de autenticação, hospedagem e moderação de conteúdo.</div>
+ <div class="note-box"><strong style="color:var(--green)">LOSI PULSO / VERSÃO 2.0</strong><br>Na aba Sets, DJs podem criar contas e enviar vídeos, com aprovação de administradores. A biblioteca musical e as playlists permanecem salvas neste aparelho.</div>
  <button class="secondary-button" style="margin-top:20px" data-action="about-install">${ico('info',15)} Como instalar no iPhone</button>`}
-const nav=[['home','Início','home'],['explore','Explorar','search'],['library','Biblioteca','library'],['profile','Perfil','user']];
+const nav=[['home','Início','home'],['explore','Explorar','search'],['sets','Sets','video'],['library','Biblioteca','library'],['profile','Perfil','user']];
 function renderNav(){$('#bottom-nav').innerHTML=nav.map(([page,label,icon])=>`<button class="nav-item ${state.page===page?'active':''}" data-action="nav" data-page="${page}" ${state.page===page?'aria-current="page"':''}>${ico(icon)}<span>${label}</span></button>`).join('')}
-function renderMain(){const prev=$('#view');prev.innerHTML=state.page==='home'?viewHome():state.page==='explore'?viewExplore():state.page==='library'?viewLibrary():viewProfile();renderNav()}
+function renderMain(){const prev=$('#view');prev.innerHTML=state.page==='home'?viewHome():state.page==='explore'?viewExplore():state.page==='library'?viewLibrary():state.page==='sets'?(window.LosiSets?.view()||'<p>Carregando sets...</p>'):viewProfile();renderNav()}
 function renderMini(){const t=getTrack(state.current);$('#mini-player').innerHTML=!t?'':`<div class="mini-player"><div class="mini-content"><button data-action="open-player" style="border:0;padding:0;background:transparent">${cover(t)}</button><button data-action="open-player" class="mini-info" style="background:none;border:0;color:inherit;text-align:left"><strong>${escape(t.title)}</strong><small>${escape(t.artist)}</small></button><button class="mini-play" data-action="toggle-play" aria-label="${state.playing?'Pausar':'Reproduzir'}">${ico(state.playing?'pause':'play',23)}</button><button class="mini-play" data-action="next" aria-label="Próxima faixa">${ico('next',19)}</button></div><div class="mini-progress"><span class="js-progress-fill"></span></div></div>`;syncProgress()}
 function renderPlayer(){const t=getTrack(state.current);if(!t||!state.playerOpen)return '';return `<div class="player-overlay"><div class="player-panel"><div class="player-top"><button data-action="close-player" aria-label="Minimizar player">${ico('down',26)}</button><strong>LOSI PULSO / NOW PLAYING</strong><button data-action="add-to-playlist" data-id="${escape(t.id)}" aria-label="Adicionar à playlist">${ico('more',24)}</button></div>
  ${cover(t,`player-cover ${state.playing?'animated':''}`)}
@@ -129,7 +130,7 @@ function renderSheet(){if(!state.sheet)return '';const t=getTrack(state.sheetTra
 function renderOverlays(){$('#overlays').innerHTML=renderPlayer()+renderSheet();syncProgress()}
 function render(){renderMain();renderMini();renderOverlays();const avatar=$('.avatar');if(avatar)avatar.textContent='L'}
 function showToast(msg){const el=$('#toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),2700)}
-function navigate(page){state.page=page;state.sheet=null;state.playlistOpen=null;state.genre='Todos';state.search='';render();window.scrollTo(0,0)}
+function navigate(page){state.page=page;state.sheet=null;state.playlistOpen=null;state.genre='Todos';state.search='';render();if(page==='sets')window.LosiSets?.load();window.scrollTo(0,0)}
 function stopAudio(){synth.stop();if(audio){audio.onloadedmetadata=null;audio.ontimeupdate=null;audio.onended=null;audio.onerror=null;audio.pause();audio.removeAttribute('src');audio.load();audio=null;}if(audioURL){URL.revokeObjectURL(audioURL);audioURL=null}}
 function playTrack(id,queue=null){
  const t=getTrack(id);if(!t)return showToast('Esta faixa não está disponível');
@@ -210,6 +211,7 @@ document.addEventListener('input',e=>{
 document.addEventListener('submit',e=>{if(e.target.id==='new-playlist-form'){e.preventDefault();createPlaylist($('#playlist-name')?.value||'')}if(e.target.id==='new-post-form'){e.preventDefault();createPost(e.target)}});
 document.addEventListener('change',e=>{if(e.target.id==='audio-upload'){importFiles([...e.target.files]);e.target.value=''}});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(state.sheet){state.sheet=null;renderOverlays()}else if(state.playerOpen){state.playerOpen=false;renderOverlays()}}});
+window.addEventListener('losi-video-play',()=>{if(state.playing)togglePlay()});
 setInterval(()=>{if(state.playing)syncProgress()},250);
 render();loadUploads();
 if('serviceWorker'in navigator && /^https?:$/.test(location.protocol))navigator.serviceWorker.register('sw.js').catch(()=>{});

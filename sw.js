@@ -1,6 +1,8 @@
-const CACHE='losi-pulso-gh-v1.0.0';
-const CACHE_PREFIX='losi-pulso-gh-';
-const CORE=['./','./index.html','./styles.css','./app.js','./audio-engine.js','./manifest.webmanifest','./icon-192.png','./icon-512.png','./favicon.svg'];
-self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(c=>c.addAll(CORE)));self.skipWaiting()});
-self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith(CACHE_PREFIX) && k!==CACHE).map(k=>caches.delete(k)))));self.clients.claim()});
-self.addEventListener('fetch',event=>{const request=event.request;if(request.method!=='GET'||new URL(request.url).origin!==self.location.origin)return;event.respondWith(caches.match(request).then(cached=>cached||fetch(request).then(response=>{if(response.ok){const clone=response.clone();caches.open(CACHE).then(cache=>cache.put(request,clone))}return response}))) });
+const CACHE='losi-pulso-gh-v2.0.0';
+const PREFIX='losi-pulso-gh-';
+const CORE=['./','./index.html','./styles.css','./sets.css','./app.js','./sets.js','./config.js','./audio-engine.js','./manifest.webmanifest','./icon-192.png','./icon-512.png','./favicon.svg'];
+self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(CORE)));self.skipWaiting()});
+self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(a=>Promise.all(a.filter(k=>k.startsWith(PREFIX)&&k!==CACHE).map(k=>caches.delete(k)))));self.clients.claim()});
+self.addEventListener('fetch',e=>{const r=e.request;if(r.method!=='GET'||new URL(r.url).origin!==self.location.origin)return;
+// Atualiza arquivos locais por rede para evitar versões antigas após novas publicações.
+e.respondWith(fetch(r).then(v=>{if(v.ok&&(/\.(?:html|js|css|svg|png|webmanifest)$/.test(new URL(r.url).pathname))){const c=v.clone();caches.open(CACHE).then(k=>k.put(r,c))}return v}).catch(()=>caches.match(r)))});

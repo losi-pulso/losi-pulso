@@ -1,0 +1,46 @@
+LOSI PULSO V2 — Atualizar seu aplicativo já instalado no iPhone
+=============================================================
+Repositório existente: https://github.com/losi-pulso/losi-pulso
+Aplicativo: https://losi-pulso.github.io/losi-pulso/
+
+1. No Windows, baixe e EXTRAIA o ZIP 'Losi_Pulso_V2_Arquivos_para_GitHub.zip'.
+2. Acesse o repositório acima, na aba Code.
+3. Clique em Add file > Upload files.
+4. Abra a pasta extraída e selecione os ARQUIVOS (Ctrl+A), não a pasta nem o ZIP.
+5. Arraste esses arquivos para o GitHub. Confirme a substituição dos arquivos de nomes iguais, se necessário.
+6. Clique em Commit changes.
+7. Acesse Settings > Pages e mantenha main / (root). Já estava configurado.
+8. Aguarde de 1 a 5 minutos e abra o endereço do aplicativo no Safari.
+9. Se o aplicativo antigo aparecer no iPhone, feche-o completamente e reabra.
+   Se continuar antigo, abra o endereço no Safari, atualize e, se necessário,
+   remova o ícone antigo e adicione-o novamente à Tela de Início.
+
+BACKEND JÁ PREPARADO
+A base SQL da versão 2 foi criada no projeto Supabase que já está
+na sua conta, chamado 'Pulso Losi'. O bucket privado 'lp-set-videos'
+e a lista de moderação também estão ativos.
+
+REGISTRAR CONTAS
+Supabase > Authentication > Providers > Email: confirme se o cadastro
+por e-mail está habilitado. Para confirmação por e-mail, confira se
+https://losi-pulso.github.io/losi-pulso/ consta em
+Authentication > URL Configuration > Redirect URLs.
+
+ADMINISTRADOR
+O sistema reaproveita os usuários autorizados em public.admin_users.
+Entre no aplicativo com a conta de administrador que já pertence à
+lista para acessar a aba 'Aprovar'. Se entrar com outra conta, a aba
+não aparece e essa conta não poderá aprovar vídeos.
+
+LIMITE DE VÍDEO
+O bucket foi configurado para até 50 MB por arquivo.
+Arquivos maiores do que isso requerem um plano/armazenamento maior.
+Recomenda-se vídeo MP4 com H.264/AAC.
+
+PONTOS IMPORTANTES
+- O GitHub Pages hospeda a interface, NÃO os vídeos.
+- O Supabase guarda contas, cadastro dos vídeos e arquivos privados.
+- O público só recebe links temporários de vídeos aprovados.
+- Vídeos sem autorização de música, imagem ou execução não devem ser publicados.
+- Em uma plataforma aberta ao público será necessário implementar fluxo
+  de denúncias, termos de uso, controle antispam e política de direitos autorais.
