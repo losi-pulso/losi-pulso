@@ -1,0 +1,118 @@
+name: PULSO Android APK assinado
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - name: Conferir chaves privadas de assinatura
+        shell: bash
+        env:
+          KEY_B64: ${{ secrets.PULSO_ANDROID_KEYSTORE_BASE64 }}
+          KEY_PASSWORD: ${{ secrets.PULSO_ANDROID_KEYSTORE_PASSWORD }}
+        run: |
+          if [ -z "$KEY_B64" ] || [ -z "$KEY_PASSWORD" ]; then
+            echo "::error::Configure PULSO_ANDROID_KEYSTORE_BASE64 e PULSO_ANDROID_KEYSTORE_PASSWORD em Settings > Secrets and variables > Actions."
+            exit 1
+          fi
+
+      - name: Baixar projeto
+        uses: actions/checkout@v4
+
+      - name: Configurar Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Localizar SDK Android
+        shell: bash
+        run: |
+          test -n "${ANDROID_HOME:-}" && test -d "$ANDROID_HOME"
+          SDKMANAGER="$(find "$ANDROID_HOME/cmdline-tools" -type f -name sdkmanager | sort -V | tail -n 1)"
+          test -n "$SDKMANAGER" && test -f "$SDKMANAGER"
+          echo "SDKMANAGER=$SDKMANAGER" >> "$GITHUB_ENV"
+
+      - name: Preparar Android SDK 36
+        shell: bash
+        run: |
+          "$SDKMANAGER" --install "platforms;android-36" "build-tools;35.0.0"
+          yes | "$SDKMANAGER" --licenses >/dev/null || true
+
+      - name: Configurar Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+
+      - name: Preparar chave de assinatura protegida
+        shell: bash
+        env:
+          KEY_B64: ${{ secrets.PULSO_ANDROID_KEYSTORE_BASE64 }}
+          KEY_PASSWORD: ${{ secrets.PULSO_ANDROID_KEYSTORE_PASSWORD }}
+        run: |
+          umask 077
+          mkdir -p "$RUNNER_TEMP/pulso-signing"
+          printf '%s' "$KEY_B64" | base64 --decode > "$RUNNER_TEMP/pulso-signing/pulso-release.p12"
+          test -s "$RUNNER_TEMP/pulso-signing/pulso-release.p12"
+          echo "PULSO_SIGNING_STORE_FILE=$RUNNER_TEMP/pulso-signing/pulso-release.p12" >> "$GITHUB_ENV"
+          # Password remains an encrypted GitHub secret, never print it or write to GITHUB_ENV.
+          keytool -list -keystore "$RUNNER_TEMP/pulso-signing/pulso-release.p12" -storepass "$KEY_PASSWORD" -alias pulso > /dev/null
+
+      - name: Compilar APK assinado para distribuição
+        shell: bash
+        env:
+          PULSO_SIGNING_PASSWORD: ${{ secrets.PULSO_ANDROID_KEYSTORE_PASSWORD }}
+        run: gradle -p android-pulso :app:assembleRelease --no-daemon --stacktrace
+
+      - name: Gerar Digital Asset Links para o domínio Netlify
+        shell: bash
+        env:
+          KEY_PASSWORD: ${{ secrets.PULSO_ANDROID_KEYSTORE_PASSWORD }}
+        run: |
+          FINGERPRINT="$(keytool -list -v -keystore "$PULSO_SIGNING_STORE_FILE" -storepass "$KEY_PASSWORD" -alias pulso | grep 'SHA256:' | head -1 | sed 's/.*SHA256: *//')"
+          test -n "$FINGERPRINT"
+          export FINGERPRINT
+          mkdir -p assets/publicar-no-netlify/.well-known
+          python3 - <<'PY'
+          import json, os
+          payload=[{
+            "relation":["delegate_permission/common.handle_all_urls"],
+            "target":{"namespace":"android_app","package_name":"com.losi.pulso","sha256_cert_fingerprints":[os.environ["FINGERPRINT"]]}
+          }]
+          with open("assets/publicar-no-netlify/.well-known/assetlinks.json","w") as f:
+              json.dump(payload,f,indent=2)
+          PY
+
+      - name: Empacotar release e arquivos para Netlify
+        shell: bash
+        run: |
+          mkdir -p release-pulso
+          cp android-pulso/app/build/outputs/apk/release/app-release.apk release-pulso/PULSO-Android.apk
+          cp -R assets/publicar-no-netlify/.well-known release-pulso/
+          cat > release-pulso/LEIA.txt <<'TXT'
+          PULSO Android assinado:
+          1. Publique PULSO-Android.apk em SITE_NETLIFY/downloads/PULSO-Android.apk
+          2. Publique .well-known/assetlinks.json em SITE_NETLIFY/.well-known/assetlinks.json
+          3. Atualize o Netlify, depois instale o APK.
+          4. Faça uma cópia de SEGURANÇA da chave p12 usada na assinatura.
+          Este APK requer uma chave persistente; nunca gere uma nova para atualizar o mesmo app.
+          TXT
+
+      - name: Disponibilizar arquivos da versão Android
+        uses: actions/upload-artifact@v4
+        with:
+          name: PULSO-Android-ASSINADO
+          path: release-pulso/
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Apagar chave privada temporária
+        if: always()
+        shell: bash
+        run: rm -rf "$RUNNER_TEMP/pulso-signing"

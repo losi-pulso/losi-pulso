@@ -1,0 +1,51 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.losi.pulso'
+    compileSdk 36
+
+    defaultConfig {
+        applicationId 'com.losi.pulso'
+        minSdk 23
+        targetSdk 35
+        versionCode 2
+        versionName '5.2'
+    }
+
+    signingConfigs {
+        pulsoRelease {
+            // Paths/passwords are passed ONLY by GitHub Actions encrypted secrets.
+            // A permanent keystore is required; do not create one on the CI runner.
+            def path = System.getenv('PULSO_SIGNING_STORE_FILE')
+            def password = System.getenv('PULSO_SIGNING_PASSWORD')
+            if (path != null && password != null) {
+                storeFile file(path)
+                storePassword password
+                keyAlias 'pulso'
+                keyPassword password
+            }
+        }
+    }
+
+    buildTypes {
+        debug {
+            // For testing only: Android debug certificate changes between environments.
+            minifyEnabled false
+        }
+        release {
+            signingConfig signingConfigs.pulsoRelease
+            minifyEnabled false
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+    implementation 'com.google.androidbrowserhelper:androidbrowserhelper:2.7.3'
+}
