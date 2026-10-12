@@ -13,8 +13,8 @@ permissions:
 jobs:
   apk-android:
     name: Compilar APK de teste
-    runs-on: ubuntu-latest
-    timeout-minutes: 25
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
 
     steps:
       - name: Baixar projeto
@@ -26,10 +26,18 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Configurar Android SDK
-        uses: android-actions/setup-android@v3
+      # Ubuntu runners already ship Android SDK command-line tools. Installing
+      # legacy "tools" using setup-android@v3 fails with "package tools not found".
+      - name: Confirmar Android SDK existente
+        shell: bash
+        run: |
+          echo "ANDROID_HOME=${ANDROID_HOME:-}"
+          test -n "${ANDROID_HOME:-}" && test -d "$ANDROID_HOME"
+          command -v sdkmanager
+          sdkmanager --version
 
       - name: Instalar plataforma Android 35
+        shell: bash
         run: |
           sdkmanager --install "platforms;android-35" "build-tools;35.0.0"
           yes | sdkmanager --licenses >/dev/null || true
