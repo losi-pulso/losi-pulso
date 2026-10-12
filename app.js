@@ -75,6 +75,7 @@ function viewHome(){
  <button class="mix-card" data-action="play-track" data-id="d6" style="text-align:left;width:100%;color:white"><div><span class="eyebrow">O CLIMA DA NOITE</span><div class="mix-title">Warung mood</div><div class="mix-copy">Progressive · groove · atmosfera</div></div><span class="circle-arrow">${ico('arrow',18)}</span></button>
  <div class="section-head"><h3 class="section-title">Na rotação</h3><span class="section-subtitle">Loops originais de demonstração</span></div>${DEMOS.slice(0,4).map(item).join('')}
  ${wallSection()}
+ <section class="note-box" style="margin-top:24px;border:1px solid #34513a;padding:18px;border-radius:16px"><strong style="color:var(--green)">APOIE O PULSO ♡</strong><p style="font-size:12px;line-height:1.6;color:#b8c7ba">Ajude a manter o projeto e descubra oportunidades de parceria. O app continua gratuito.</p><a href="monetizacao.html" class="primary-button" style="text-decoration:none">Apoie / parcerias →</a></section>
  <p class="helper" style="margin-top:20px">As faixas demo são loops sintetizados em tempo real. Importe suas músicas na Biblioteca para ouvir arquivos completos.</p>`;
 }
 function matchesGenre(t){return state.genre==='Todos'||t.genre===state.genre}
@@ -107,8 +108,8 @@ function viewProfile(){return `<div class="eyebrow">BACKSTAGE / PERFIL</div><h2 
  <div class="menu-row">${ico('upload',20)}<div>Importar arquivos de áudio</div><span>Local</span></div>
  <div class="menu-row">${ico('video',20)}<div>Sets em vídeo e músicas MP3</div><span>Versão 3.1</span></div>
  <div class="menu-row">${ico('headphones',20)}<div>Mural pessoal de links</div><span>${state.posts.length} salvo(s)</span></div>
- <div class="note-box"><strong style="color:var(--green)">LOSI PULSO / VERSÃO 3.1</strong><br>Na aba Sets, DJs podem enviar vídeos e MP3 para aprovação. Baixe conteúdos aprovados na área Offline para usar sem internet. A biblioteca musical e as playlists permanecem salvas neste aparelho.</div>
- <button class="secondary-button" style="margin-top:20px" data-action="about-install">${ico('info',15)} Como instalar no iPhone</button>`}
+ <div class="note-box"><strong style="color:var(--green)">LOSI PULSO / VERSÃO 3.1</strong><br>Na aba Sets, DJs podem enviar vídeos e MP3 para aprovação. Baixe conteúdos aprovados na área Offline para usar sem internet. A biblioteca musical e as playlists permanecem salvas neste aparelho.</div>  <a class="primary-button" href="monetizacao.html" style="text-decoration:none;margin-top:20px">♡ Apoie o PULSO / Parcerias</a>
+  <button class="secondary-button" style="margin-top:12px" data-action="about-install">${ico('info',15)} Como instalar no iPhone</button>`}
 const nav=[['home','Início','home'],['explore','Explorar','search'],['sets','Sets','video'],['library','Biblioteca','library'],['profile','Perfil','user']];
 function renderNav(){$('#bottom-nav').innerHTML=nav.map(([page,label,icon])=>`<button class="nav-item ${state.page===page?'active':''}" data-action="nav" data-page="${page}" ${state.page===page?'aria-current="page"':''}>${ico(icon)}<span>${label}</span></button>`).join('')}
 function renderMain(){const prev=$('#view');prev.innerHTML=state.page==='home'?viewHome():state.page==='explore'?viewExplore():state.page==='library'?viewLibrary():state.page==='sets'?(window.LosiSets?.view()||'<p>Carregando sets...</p>'):viewProfile();renderNav()}
