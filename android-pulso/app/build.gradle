@@ -1,0 +1,35 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.losi.pulso'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId 'com.losi.pulso'
+        minSdk 23
+        targetSdk 35
+        versionCode 1
+        versionName '5.1-test'
+    }
+
+    buildTypes {
+        debug {
+            // APK only for private test installations, signed by Android debug certificate.
+            minifyEnabled false
+        }
+        release {
+            minifyEnabled false
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+    implementation 'com.google.androidbrowserhelper:androidbrowserhelper:2.7.3'
+}
