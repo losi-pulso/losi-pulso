@@ -1,0 +1,66 @@
+LOSI PULSO — INSTALAR NO IPHONE SEM EXPO GO, SEM NETLIFY
+=========================================================
+
+PRECISA: computador Windows, iPhone, uma conta gratuita no GitHub.
+NÃO precisa: Expo Go, Mac, código ou conta Apple Developer.
+
+PARTE 1 — PUBLICAR GRATUITAMENTE NO GITHUB PAGES
+
+1) No Windows, abra https://github.com e crie uma conta (Sign up),
+   caso não tenha. Confirme seu e-mail.
+
+2) Entre em https://github.com/new
+
+3) Em Repository name, digite: losi-pulso
+   Marque Public e clique em Create repository.
+
+4) Na página do novo repositório, clique em
+   "uploading an existing file" (ou Add file > Upload files).
+
+5) Extraia este ZIP. Selecione TODOS os arquivos da pasta extraída
+   (index.html, app.js, styles.css, audio-engine.js, sw.js,
+   manifest.webmanifest, icon-192.png, icon-512.png,
+   favicon.svg, .nojekyll e este TXT) e arraste para
+   o quadrado de upload do GitHub.
+   IMPORTANTE: index.html precisa aparecer na RAIZ do repositório,
+   não dentro de uma outra pasta.
+
+6) Vá até o fim da página e clique em Commit changes.
+
+7) No repositório, abra Settings > Pages (menu lateral).
+   Em Build and deployment:
+   Source: Deploy from a branch
+   Branch: main | /(root)
+   Clique em Save.
+
+8) Quando a publicação estiver concluída, o endereço será:
+   https://SEU_USUARIO.github.io/losi-pulso/
+   (troque SEU_USUARIO pelo nome de sua conta no GitHub).
+   Em Settings > Pages, também haverá um botão Visit site.
+
+PARTE 2 — INSTALAR O ÍCONE NO IPHONE
+
+1) No iPhone, abra o SAFARI.
+2) Entre no endereço do passo 8.
+3) Toque em Compartilhar (ícone com seta para cima),
+   ou no menu da página > Compartilhar.
+4) Escolha Adicionar à Tela de Início.
+5) Mantenha "Abrir como App da Web" ativado, se aparecer.
+6) Confirme em Adicionar.
+7) O ícone LOSI PULSO aparecerá na tela inicial.
+
+O que funciona: música demo sintetizada, player, busca,
+favoritos, playlists, links de DJs e arquivos de áudio importados
+que ficam armazenados localmente no iPhone.
+
+ATENÇÃO
+- É um aplicativo WEB instalável, não um IPA nativo.
+- O site/código fica PÚBLICO no GitHub Pages gratuito.
+- Não coloque arquivos pessoais ou músicas sem autorização no GitHub.
+- Músicas que você importar na biblioteca ficam no navegador do
+  aparelho; o aplicativo não as envia ao GitHub.
+- Se apagar os dados de sites do Safari, poderá perder biblioteca
+  importada, playlists e favoritos; mantenha backup dos áudios.
+- O iPhone pode restringir a reprodução em segundo plano.
+- Para uma versão nativa de iPhone é necessário um arquivo IPA
+  devidamente compilado/assinado, além de um processo de instalação.

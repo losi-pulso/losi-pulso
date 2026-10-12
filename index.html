@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+  <meta name="theme-color" content="#090b0b">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="LOSI PULSO">
+  <meta name="description" content="LOSI PULSO — música eletrônica sem pausa. Descubra, ouça e organize suas sessões.">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+  <title>LOSI PULSO — Música eletrônica sem pausa</title>
+</head>
+<body>
+  <div class="app-shell" id="app">
+    <header class="topbar">
+      <button class="brand-button" data-action="go-home" aria-label="LOSI PULSO, início">
+        <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+        <span class="brand-word">LOSI PULSO<span class="brand-dot">.</span></span>
+      </button>
+      <span class="topbar-tag">MÚSICA ELETRÔNICA<br>SEM PAUSA</span>
+      <button class="avatar" data-action="go-profile" aria-label="Abrir perfil">L</button>
+    </header>
+    <main id="view" class="view" tabindex="-1"></main>
+    <div id="mini-player"></div>
+    <nav class="bottom-nav" id="bottom-nav" aria-label="Navegação principal"></nav>
+    <div id="overlays"></div>
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  </div>
+  <script src="audio-engine.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
