@@ -1,65 +1,55 @@
-LOSI PULSO V3 — VÍDEOS + MÚSICAS MP3 + DOWNLOAD OFFLINE
-=======================================================
+LOSI PULSO 3.1 — PLAYER PARA TELA BLOQUEADA + MP3 LONGOS (PREPARAÇÃO)
+====================================================================
 
-ENDEREÇOS QUE JÁ SÃO SEUS
-Repositório GitHub: https://github.com/losi-pulso/losi-pulso
-Aplicativo iPhone: https://losi-pulso.github.io/losi-pulso/
+A) ATUALIZAR O APP QUE VOCÊ JÁ USA NO IPHONE
+1. Abra https://github.com/losi-pulso/losi-pulso
+2. Clique em Code > Add file > Upload files.
+3. Extraia o ZIP e envie TODOS os arquivos web soltos (incluindo index.html,
+   background-player.js, background-player.css, sw.js, mp3.js, app.js, etc.).
+   NÃO envie a pasta como uma subpasta; os arquivos devem ficar na raiz.
+4. Confirme em Commit changes e espere o GitHub Pages publicar.
+5. Abra https://losi-pulso.github.io/losi-pulso/ no Safari do iPhone.
+6. Feche e reabra o atalho Losi Pulso na tela inicial. Se o app não atualizar,
+   abra pelo Safari primeiro; NÃO apague dados do site pois pode perder downloads.
 
-ATUALIZAR SEM EXPO GO, NETLIFY OU NOVA CONTA
-1. No Windows, baixe e EXTRAIA o ZIP "Losi_Pulso_v3_Atualizar_GitHub.zip".
-2. Abra https://github.com/losi-pulso/losi-pulso
-3. Vá em Code > Add file > Upload files.
-4. Selecione TODOS os arquivos extraídos DENTRO DA PASTA, não a pasta nem o ZIP.
-   IMPORTANTE: index.html, app.js, sets.js, mp3.js, offline.js, offline.css,
-   styles.css, sets.css, config.js, sw.js, audio-engine.js, manifest.webmanifest
-   e os ícones devem ficar diretamente na raiz do repositório.
-5. Finalize em Commit changes. Os arquivos existentes serão atualizados.
-6. Settings > Pages já deve estar configurado em main / (root). Não mude.
-7. Aguarde alguns minutos. Abra o endereço do aplicativo no Safari do iPhone.
-8. Feche e abra de novo o aplicativo instalado para carregar a versão nova.
-   Se houver cache antigo, atualize a página no Safari e volte a abrir o app.
-   NUNCA limpe os dados do Safari se quiser manter downloads offline.
+B) TESTAR A MÚSICA COM A TELA BLOQUEADA
+1. Em Sets > MP3 escolha uma faixa aprovada e toque em Ouvir.
+2. Se o iPhone impedir autoplay após a busca do arquivo, toque em ▶ na nova
+   barra verde fixa na parte inferior do app. Isso é uma regra do navegador.
+3. Comece a tocar um MP3, pressione o botão de bloquear e teste no iPhone.
+4. Tente controlar play/pausa e avanço pela tela de bloqueio/Central de Controle.
+5. Repita com um MP3 baixado em Sets > Offline, ou um MP3 importado em Biblioteca.
 
-COMO O USUÁRIO BAIXA
-- No app, acesse Sets > Vídeos e toque em "Baixar vídeo offline" num set aprovado.
-- Em Sets > MP3, toque em "Baixar offline" numa faixa aprovada.
-- Abra Sets > Offline, ou Biblioteca > Downloads offline.
-- Toque em Reproduzir mesmo com modo avião.
-- Exclua os arquivos por meio do botão × da biblioteca offline.
-- MP3 IMPORTADO PELO PRÓPRIO USUÁRIO: Biblioteca > Adicionar; estes arquivos
-  já ficam localmente armazenados na biblioteca pessoal anterior.
+IMPORTANTE: Um PWA pelo Safari NÃO pode habilitar AVAudioSession/Background Modes
+como um app iOS nativo. Funciona por HTMLAudioElement e Media Session quando
+suportado, mas NÃO garantimos reprodução contínua em TODOS os iPhones/iOS.
+Loops de demonstração sintetizados em WebAudio podem parar com a tela bloqueada.
+A versão nativa com áudio em background é a solução definitiva.
 
-COMO O DJ PUBLICA MP3
-- Sets > + Enviar vídeo (para entrar ou criar conta, se necessário).
-- Sets > MP3 > + Publicar. O MP3 ficará pendente.
-- Conta administradora: Sets > MP3 > Aprovar para liberar reprodução/download.
-- A conta admin deve constar na tabela public.admin_users do Supabase.
+C) ARQUIVOS MP3 GRANDES
+- Atualmente, o projeto Supabase guarda MP3 no bucket privado 'lp-mp3'.
+- Limite real do backend hoje: 50 MB por MP3. A interface continua respeitando
+  esse limite para NÃO prometer uploads que o servidor recusará.
+- O código de envio utiliza TUS resumable (chunks de 6 MB): ele já admite
+  redes instáveis e continuará funcionando se o limite do backend for ampliado.
+- Para MP3 acima de 50 MB, duas opções:
+  1) Supabase Pro: ajuste Global File Size Limit em Storage > Settings,
+     execute o SQL opcional BACKEND/03_APOS_UPGRADE_SUPABASE_PRO.sql e altere
+     config.js > maxMp3UploadMB: 500. ISSO PODE GERAR COBRANÇA.
+  2) Cloudflare R2 Standard + Worker privado: permite uploads maiores e tem
+     franquia gratuita sujeita a limites. É preciso configurar nova conta,
+     bucket, Worker para autorização e download e integrar na tabela de mídia.
+     R2 AINDA NÃO FOI CONFIGURADO NESTE PACOTE.
+- Os uploads NÃO continuam em segundo plano se o iPhone encerrar o PWA.
+- Os downloads offline também dependem da cota local do Safari/iOS.
 
-LIMITES E CUIDADOS
-- Esta v3 limita downloads, uploads de vídeo e de MP3 a 50 MB por arquivo.
-- Supabase guarda os vídeos e MP3 na nuvem; GitHub Pages hospeda apenas o app.
-- Downloads offline ficam no IndexedDB da instalação PWA, NÃO na pasta Arquivos.
-- O iOS pode apagar dados para economizar armazenamento: NÃO são backups permanentes.
-- O download OFFLINE exige internet inicialmente; a reprodução depois não exige.
-- Vídeos externos incorporados do YouTube NÃO estão disponíveis para download.
-- Downloads de terceiros exigem autorização dos respectivos titulares de direitos.
-- Se a publicação estiver aberta a todos, inclua termos de uso, antispam,
-  denúncias de conteúdo e uma política de direitos autorais antes de produção.
+D) APROVAÇÃO E DIREITOS AUTORAIS
+Todo MP3 enviado mantém status 'pending' até o administrador aprovar.
+O app não deve redistribuir obras sem permissão de seus titulares.
+Arquivos aprovados ficam disponíveis para reprodução e download offline
+conforme as permissões da plataforma.
 
-BACKEND PRONTO
-Foi executada uma migração de MP3 no seu projeto Supabase "Pulso Losi".
-Bucket privado lp-mp3 e tabela lp_mp3_tracks já configurados.
-NÃO execute os SQLs novamente no projeto atual.
-Verifique Authentication > URL Configuration > Redirect URLs:
-  https://losi-pulso.github.io/losi-pulso/
-
-COMO TESTAR NO IPHONE
-1. Entre em uma conta DJ e envie um MP3 pequeno do qual você tem direitos.
-2. Entre como administrador e aprove o MP3.
-3. No catálogo MP3, toque em Baixar offline.
-4. Abra Offline, ligue o MODO AVIÃO e toque em ▶ na faixa baixada.
-5. Repita com um vídeo MP4 curto aprovado.
-6. Reabra o app offline para verificar se a biblioteca persiste.
-
-AVISO: a estrutura e a sintaxe foram validadas, mas o teste real de login,
-upload e modo avião no seu iPhone ainda depende de você executar os passos.
+E) VALIDAÇÃO
+A sintaxe JavaScript e as rotas de navegação foram verificadas em testes locais.
+Não foi possível realizar um teste de execução em Safari iOS real aqui.
+O novo player e o envio de MP3 >50 MB precisam ser testados no ambiente alvo.

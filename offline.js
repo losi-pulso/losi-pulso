@@ -1,4 +1,4 @@
-/* LOSI PULSO v3 — downloads privados MP3 e vídeo, armazenados localmente no IndexedDB. */
+/* LOSI PULSO v3.1 — downloads privados MP3 e vídeo, armazenados localmente no IndexedDB. */
 (()=>{
 'use strict';
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -50,8 +50,8 @@ async function save(kind,record,client,bucket){
   if(link.error)throw link.error;
   const response=await fetch(link.data.signedUrl,{cache:'no-store'});
   if(!response.ok)throw Error(`Falha no download (HTTP ${response.status})`);
-  const max=50*1024*1024;const length=Number(response.headers.get('content-length')||0);
-  if(length>max)throw Error('Arquivo maior que o limite offline desta versão (50 MB).');
+  const max=(Number(window.LOSI_SUPABASE?.maxOfflineMB)||50)*1024*1024;const length=Number(response.headers.get('content-length')||0);
+  if(length>max)throw Error('Arquivo maior que o limite offline configurado para este aparelho.');
   const chunks=[];let received=0;
   if(response.body?.getReader){const reader=response.body.getReader();try{while(true){const {done,value}=await reader.read();if(done)break;received+=value.byteLength;if(received>max){await reader.cancel();throw Error('Arquivo muito grande para esta versão.');}chunks.push(value);progress=`Baixando ${esc(record.title)}: ${length?Math.round(100*received/length)+'%':bytes(received)}`;rerender();}}finally{reader.releaseLock?.();}}
   else {const blob=await response.blob();received=blob.size;if(received>max)throw Error('Arquivo muito grande.');chunks.push(blob);}
@@ -65,11 +65,16 @@ async function save(kind,record,client,bucket){
  finally{busyId=null;rerender();}
 }
 async function play(id){const it=items.find(x=>x.key===id);if(!it){error='Arquivo offline não encontrado. Atualize a biblioteca.';rerender();return;}
+ if(it.kind==='audio'){
+  try{await window.LosiBackgroundAudio.playBlob(it.blob,{title:it.title,artist:it.artist,source:'Offline'});}
+  catch(err){error='Não foi possível tocar este arquivo: '+String(err.message||err);rerender();}return;
+ }
  close();const overlay=document.createElement('div');overlay.id='lp-offline-modal';overlay.className='lp-video-modal';
  playingUrl=URL.createObjectURL(it.blob);
- overlay.innerHTML=`<div class="lp-video-backdrop" data-offline-action="close"></div><section class="lp-video-sheet" role="dialog" aria-label="Reprodução offline"><button class="lp-video-close" data-offline-action="close">×</button><div class="lp-video-top"><small>LOSI PULSO · OFFLINE</small><h3>${esc(it.title)}</h3><span>${esc(it.artist)}</span></div>${it.kind==='video'?`<video controls playsinline preload="metadata" src="${playingUrl}"></video>`:`<div class="offline-player-symbol">♫</div><audio controls preload="metadata" src="${playingUrl}" style="width:100%"></audio>`}<p>Salvo neste dispositivo · ${bytes(it.size)}</p></section>`;
- document.body.appendChild(overlay);document.body.style.overflow='hidden';window.dispatchEvent(new Event('losi-video-play'));
+ overlay.innerHTML=`<div class="lp-video-backdrop" data-offline-action="close"></div><section class="lp-video-sheet" role="dialog" aria-label="Reprodução offline"><button class="lp-video-close" data-offline-action="close">×</button><div class="lp-video-top"><small>LOSI PULSO · OFFLINE</small><h3>${esc(it.title)}</h3><span>${esc(it.artist)}</span></div><video controls playsinline preload="metadata" src="${playingUrl}"></video><p>Salvo neste dispositivo · ${bytes(it.size)}</p></section>`;
+ document.body.appendChild(overlay);document.body.style.overflow='hidden';window.LosiBackgroundAudio?.pause();window.dispatchEvent(new Event('losi-video-play'));
 }
+
 function close(){const el=document.getElementById('lp-offline-modal');if(el){el.querySelector('video,audio')?.pause();el.remove();document.body.style.overflow='';}if(playingUrl){URL.revokeObjectURL(playingUrl);playingUrl=null;}}
 async function remove(id){const it=items.find(x=>x.key===id);if(!it||!confirm(`Excluir "${it.title}" dos downloads deste aparelho?`))return;
  try{await tx('readwrite',s=>s.delete(id));await refresh();progress='Arquivo excluído do dispositivo.';}catch(err){error='Erro ao excluir: '+String(err.message||err);}rerender();}

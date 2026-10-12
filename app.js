@@ -105,9 +105,9 @@ function viewProfile(){return `<div class="eyebrow">BACKSTAGE / PERFIL</div><h2 
  <div class="menu-row">${ico('radio',20)}<div>Player de música eletrônica</div><span>Funcionando</span></div>
  <div class="menu-row">${ico('library',20)}<div>Playlists e favoritos</div><span>Neste iPhone</span></div>
  <div class="menu-row">${ico('upload',20)}<div>Importar arquivos de áudio</div><span>Local</span></div>
- <div class="menu-row">${ico('video',20)}<div>Sets em vídeo e músicas MP3</div><span>Versão 3</span></div>
+ <div class="menu-row">${ico('video',20)}<div>Sets em vídeo e músicas MP3</div><span>Versão 3.1</span></div>
  <div class="menu-row">${ico('headphones',20)}<div>Mural pessoal de links</div><span>${state.posts.length} salvo(s)</span></div>
- <div class="note-box"><strong style="color:var(--green)">LOSI PULSO / VERSÃO 3.0</strong><br>Na aba Sets, DJs podem enviar vídeos e MP3 para aprovação. Baixe conteúdos aprovados na área Offline para usar sem internet. A biblioteca musical e as playlists permanecem salvas neste aparelho.</div>
+ <div class="note-box"><strong style="color:var(--green)">LOSI PULSO / VERSÃO 3.1</strong><br>Na aba Sets, DJs podem enviar vídeos e MP3 para aprovação. Baixe conteúdos aprovados na área Offline para usar sem internet. A biblioteca musical e as playlists permanecem salvas neste aparelho.</div>
  <button class="secondary-button" style="margin-top:20px" data-action="about-install">${ico('info',15)} Como instalar no iPhone</button>`}
 const nav=[['home','Início','home'],['explore','Explorar','search'],['sets','Sets','video'],['library','Biblioteca','library'],['profile','Perfil','user']];
 function renderNav(){$('#bottom-nav').innerHTML=nav.map(([page,label,icon])=>`<button class="nav-item ${state.page===page?'active':''}" data-action="nav" data-page="${page}" ${state.page===page?'aria-current="page"':''}>${ico(icon)}<span>${label}</span></button>`).join('')}
@@ -133,12 +133,20 @@ function render(){renderMain();renderMini();renderOverlays();const avatar=$('.av
 function showToast(msg){const el=$('#toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),2700)}
 function navigate(page){state.page=page;state.sheet=null;state.playlistOpen=null;state.genre='Todos';state.search='';render();if(page==='sets')window.LosiSets?.load();window.scrollTo(0,0)}
 function stopAudio(){synth.stop();if(audio){audio.onloadedmetadata=null;audio.ontimeupdate=null;audio.onended=null;audio.onerror=null;audio.pause();audio.removeAttribute('src');audio.load();audio=null;}if(audioURL){URL.revokeObjectURL(audioURL);audioURL=null}}
+function setupPersonalMediaSession(t){
+ if(!('mediaSession' in navigator)||!('MediaMetadata' in window))return;
+ try{
+  navigator.mediaSession.metadata=new MediaMetadata({title:t.title,artist:t.artist,album:'Losi Pulso · Minha biblioteca',artwork:[{src:new URL('icon-512.png',location.href).href,sizes:'512x512',type:'image/png'}]});
+  const actions={play:()=>{if(!state.playing)togglePlay()},pause:()=>{if(state.playing)togglePlay()},previoustrack:()=>nextTrack(true),nexttrack:()=>nextTrack(),seekto:d=>{if(Number.isFinite(d.seekTime))seek(d.seekTime)},seekbackward:d=>seek(Math.max(0,currentPosition()-(d.seekOffset||15))),seekforward:d=>seek(currentPosition()+(d.seekOffset||15))};
+  Object.entries(actions).forEach(([action,handler])=>{try{navigator.mediaSession.setActionHandler(action,handler)}catch(e){}});
+ }catch(e){console.debug('Controles da tela bloqueada indisponíveis',e)}
+}
 function playTrack(id,queue=null){
  const t=getTrack(id);if(!t)return showToast('Esta faixa não está disponível');
  try{
-  stopAudio();state.current=id;state.position=0;state.playing=true;state.queue=queue||allTracks().map(t=>t.id);
+  window.LosiBackgroundAudio?.stop();stopAudio();state.current=id;state.position=0;state.playing=true;state.queue=queue||allTracks().map(t=>t.id);
   if(isFile(t)){
-   audioURL=URL.createObjectURL(t.blob);audio=new Audio(audioURL);audio.preload='metadata';
+   audioURL=URL.createObjectURL(t.blob);audio=new Audio(audioURL);audio.preload='metadata';setupPersonalMediaSession(t);
    audio.onloadedmetadata=()=>{t.duration=Number.isFinite(audio.duration)?audio.duration:0;syncProgress()};
    audio.ontimeupdate=()=>syncProgress();
    audio.onended=()=>state.repeat?playTrack(t.id,state.queue):nextTrack();
@@ -148,7 +156,7 @@ function playTrack(id,queue=null){
   renderMain();renderMini();renderOverlays();
  }catch(err){state.playing=false;renderMini();renderOverlays();showToast(err.message||'Não foi possível reproduzir')}
 }
-function togglePlay(){const t=getTrack(state.current);if(!t)return playTrack('d1');if(state.playing){state.position=currentPosition();state.playing=false;if(isFile(t))audio?.pause();else synth.stop()}else{state.playing=true;if(isFile(t)){const p=audio?.play();if(p&&p.catch)p.catch(()=>{state.playing=false;showToast('Toque novamente para reproduzir')})}else{try{synth.start(t,state.position)}catch(e){state.playing=false;showToast('Áudio indisponível')}}}renderMini();renderOverlays()}
+function togglePlay(){const t=getTrack(state.current);if(!t)return playTrack('d1');if(state.playing){state.position=currentPosition();state.playing=false;if(isFile(t))audio?.pause();else synth.stop()}else{state.playing=true;if(isFile(t)){window.LosiBackgroundAudio?.stop();const p=audio?.play();if(p&&p.catch)p.catch(()=>{state.playing=false;showToast('Toque novamente para reproduzir')})}else{try{synth.start(t,state.position)}catch(e){state.playing=false;showToast('Áudio indisponível')}}}renderMini();renderOverlays()}
 function currentPosition(){const t=getTrack(state.current);return !t?0:isFile(t)?(audio?.currentTime||state.position):state.playing?synth.getPosition():state.position}
 function syncProgress(){const t=getTrack(state.current);if(!t)return;const duration=dur(t),position=currentPosition(),pct=duration?Math.min(100,(position/duration)*100):0;document.querySelectorAll('.js-progress-fill').forEach(el=>el.style.width=pct+'%');document.querySelectorAll('.js-progress').forEach(el=>{if(document.activeElement!==el)el.value=String(Math.floor(pct*10))});document.querySelectorAll('.js-current-time').forEach(el=>el.textContent=fmtTime(position));document.querySelectorAll('.js-duration').forEach(el=>el.textContent=fmtTime(duration))}
 function nextTrack(back=false){const tracks=state.queue.filter(id=>!!getTrack(id));if(!tracks.length)return;const i=tracks.indexOf(state.current);const pos=state.shuffle?Math.floor(Math.random()*tracks.length):(i+(back?-1:1)+tracks.length)%tracks.length;playTrack(tracks[pos],tracks)}

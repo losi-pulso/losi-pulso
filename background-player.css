@@ -1,0 +1,9 @@
+/* Player persistente: deixa o <audio> vivo mesmo quando as abas de MP3 mudam. */
+#lp-bg-player[hidden]{display:none!important}
+#lp-bg-player{position:fixed;left:50%;bottom:calc(78px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);width:calc(100% - 24px);max-width:474px;z-index:125;min-height:72px;border:1px solid #42562a;border-radius:16px;box-shadow:0 9px 30px #000b;background:#171e18ee;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);padding:10px;display:flex;gap:10px;align-items:center;color:#f3f7ef;font:600 12px/1.3 system-ui,sans-serif}
+.lp-bg-disc{background:#293d22;border-radius:11px;color:#c5f65a;display:grid;place-items:center;width:38px;height:40px;flex-shrink:0;font-size:21px}
+.lp-bg-main{min-width:0;flex:1}.lp-bg-main strong,.lp-bg-main small{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.lp-bg-main small{color:#9faf9a;font-size:10px;margin:3px 0}
+.lp-bg-main input{display:block;width:100%;height:8px;accent-color:#c5f65a;margin:4px 0 0;touch-action:auto}
+#lp-bg-player button{border:0;border-radius:50%;width:36px;height:36px;display:grid;place-items:center;background:#bcf553;color:#111;font-weight:800;font-size:17px;padding:0}
+#lp-bg-player button[data-lp-bg=stop]{background:#313c32;color:#dae4d8;font-size:22px;width:28px;height:28px}
+@media(max-width:360px){#lp-bg-player{gap:6px;padding:7px}.lp-bg-disc{width:28px}#lp-bg-player button{width:33px;height:33px}}

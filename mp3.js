@@ -1,4 +1,4 @@
-/* LOSI PULSO v3 — catálogo de MP3, envio de DJs e aprovação. */
+/* LOSI PULSO v3.1 — catálogo de MP3, envio de DJs e aprovação. */
 (()=>{
 'use strict';
 const TABLE='lp_mp3_tracks',BUCKET='lp-mp3';
@@ -16,13 +16,14 @@ function card(track,mode){const mine=mode==='mine',mod=mode==='mod';return `<art
  ${mine&&track.status==='rejected'&&track.review_note?`<p class="set-review-note">Motivo da recusa: ${esc(track.review_note)}</p>`:''}
  ${mod?`<div class="set-review-controls"><button class="primary-button" data-mp3-action="approve" data-id="${esc(track.id)}">Aprovar</button><button class="secondary-button" data-mp3-action="reject" data-id="${esc(track.id)}">Recusar</button></div>`:''}
  </div></article>`;}
+function maxMp3MB(){return Number(window.LOSI_SUPABASE?.maxMp3UploadMB)||50;}
 function uploadForm(){return `<div class="set-upload-box mp3-upload"><div class="eyebrow">PUBLICAR / MÚSICA</div><h3>Envie seu MP3.</h3><p>Compartilhe uma faixa autorizada com a comunidade. A publicação depende de aprovação.</p>
  <form id="mp3-upload-form"><label class="set-label">Título da música<input name="title" minlength="3" maxlength="120" required placeholder="Ex.: Midnight Orbit"></label>
  <label class="set-label">Nome artístico<input name="artist" minlength="2" maxlength="70" required value="${esc(data.user?.user_metadata?.dj_name||'')}" placeholder="Nome do DJ"></label>
  <label class="set-label">Estilo musical<select name="genre">${GENRES.map(g=>`<option>${g}</option>`).join('')}</select></label>
  <label class="set-label">Descrição<input name="description" maxlength="500" placeholder="Sobre o lançamento (opcional)"></label>
  <label class="set-label">Arquivo MP3<input name="audio" type="file" accept=".mp3,audio/mpeg,audio/mp3" required></label>
- <p class="set-limit">Limite de teste: <strong>50 MB por MP3</strong>. É necessário que a faixa e sua gravação estejam autorizadas.</p>
+ <p class="set-limit">Limite atual: <strong>${maxMp3MB()} MB por MP3</strong>. Envio em partes com retomada quando a conexão cair. Sets acima de 50 MB exigem um plano de armazenamento maior ou uma integração R2. É necessário ter autorização para publicar.</p>
  <label class="set-consent"><input type="checkbox" name="rights" required> Tenho autorização para publicar e disponibilizar esta música para reprodução e download offline.</label>
  <div id="mp3-progress" aria-live="polite"></div><button class="primary-button" type="submit" ${data.busy?'disabled':''}>${data.busy?'Enviando...':'Enviar MP3 para aprovação →'}</button></form></div>`;}
 function view(){return `<div class="mp3-page"><div class="eyebrow">LOSI PULSO / MP3</div><h2 class="heading">Música para<br><span class="set-neon">sentir em qualquer lugar.</span></h2><p class="subcopy">Faixas aprovadas para ouvir online ou guardar no aparelho. A seleção offline funciona sem internet.</p>
@@ -42,14 +43,15 @@ async function load(user,admin){data.user=user||null;data.admin=!!admin;
   if(!user&&['mine','mod'].includes(data.section))data.section='catalog';data.loaded=true;
  }catch(err){data.message='Não foi possível carregar os MP3: '+String(err.message||err);data.error=true;data.loaded=true;}redraw();}
 function get(id){return [...data.gallery,...data.mine,...data.pending].find(x=>x.id===id);}
-async function signed(t){const c=client();if(!c)throw Error('Conecte à internet para reproduzir este MP3.');const l=await c.storage.from(BUCKET).createSignedUrl(t.storage_path,3600);if(l.error)throw l.error;return l.data.signedUrl;}
+async function signed(t){const c=client();if(!c)throw Error('Conecte à internet para reproduzir este MP3.');const l=await c.storage.from(BUCKET).createSignedUrl(t.storage_path,21600);if(l.error)throw l.error;return l.data.signedUrl;}
 async function listen(id){const t=get(id);if(!t)return notice('MP3 indisponível.',true);
- try{const url=await signed(t);document.getElementById('lp-mp3-modal')?.remove();const el=document.createElement('div');el.id='lp-mp3-modal';el.className='lp-video-modal';el.innerHTML=`<div class="lp-video-backdrop" data-mp3-action="close"></div><section class="lp-video-sheet" role="dialog" aria-label="Ouvir MP3"><button class="lp-video-close" data-mp3-action="close">×</button><div class="lp-video-top"><small>LOSI PULSO / MP3</small><h3>${esc(t.title)}</h3><span>${esc(t.artist)}</span></div><div class="offline-player-symbol">♫</div><audio src="${esc(url)}" controls preload="metadata" style="width:100%"></audio><p>Ouça a faixa aprovada · ${esc(t.genre)}</p></section>`;document.body.appendChild(el);document.body.style.overflow='hidden';window.dispatchEvent(new Event('losi-video-play'));}
- catch(err){notice('Erro ao abrir MP3: '+String(err.message||err),true);}}
+ try{const url=await signed(t);await window.LosiBackgroundAudio.play({url,title:t.title,artist:t.artist,source:'MP3 · '+t.genre});
+ }catch(err){notice('Erro ao abrir MP3: '+String(err.message||err),true);}}
+
 function close(){const el=document.getElementById('lp-mp3-modal');el?.querySelector('audio')?.pause();el?.remove();document.body.style.overflow='';}
 async function upload(form){if(data.busy||!data.user)return;const file=form.elements.audio.files[0];if(!file)return notice('Selecione um arquivo MP3.',true);
  if(!/\.mp3$/i.test(file.name))return notice('Apenas arquivos .mp3 são aceitos para publicação.',true);
- if(file.size>50*1024*1024||!file.size)return notice('O MP3 deve ter entre 1 byte e 50 MB.',true);
+ if(file.size>maxMp3MB()*1024*1024||!file.size)return notice(`O MP3 deve ter entre 1 byte e ${maxMp3MB()} MB. Para enviar sets maiores, é necessário ampliar o armazenamento.`,true);
  if(!form.elements.rights.checked)return notice('É necessário confirmar autorização para publicação e download.',true);
  const id=crypto.randomUUID(),path=`${data.user.id}/${id}.mp3`;
  const record={id,owner_id:data.user.id,artist:form.elements.artist.value.trim(),title:form.elements.title.value.trim(),genre:form.elements.genre.value,description:form.elements.description.value.trim(),storage_path:path,status:'pending'};
