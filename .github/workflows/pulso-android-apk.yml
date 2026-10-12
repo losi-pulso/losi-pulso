@@ -38,16 +38,16 @@ jobs:
           echo "SDKMANAGER=$SDKMANAGER" >> "$GITHUB_ENV"
           "$SDKMANAGER" --version
 
-      - name: Instalar plataforma Android 35
+      - name: Instalar plataforma Android 36
         shell: bash
         run: |
-          "$SDKMANAGER" --install "platforms;android-35" "build-tools;35.0.0"
+          "$SDKMANAGER" --install "platforms;android-36" "build-tools;35.0.0"
           yes | "$SDKMANAGER" --licenses >/dev/null || true
 
       - name: Configurar Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: '8.10.2'
+          gradle-version: '8.11.1'
 
       - name: Compilar APK
         run: gradle -p android-pulso :app:assembleDebug --no-daemon --stacktrace
