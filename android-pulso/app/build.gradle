@@ -10,16 +10,32 @@ android {
         applicationId 'com.losi.pulso'
         minSdk 23
         targetSdk 35
-        versionCode 1
-        versionName '5.1-test'
+        versionCode 2
+        versionName '5.2'
+    }
+
+    signingConfigs {
+        pulsoRelease {
+            // Paths/passwords are passed ONLY by GitHub Actions encrypted secrets.
+            // A permanent keystore is required; do not create one on the CI runner.
+            def path = System.getenv('PULSO_SIGNING_STORE_FILE')
+            def password = System.getenv('PULSO_SIGNING_PASSWORD')
+            if (path != null && password != null) {
+                storeFile file(path)
+                storePassword password
+                keyAlias 'pulso'
+                keyPassword password
+            }
+        }
     }
 
     buildTypes {
         debug {
-            // APK only for private test installations, signed by Android debug certificate.
+            // For testing only: Android debug certificate changes between environments.
             minifyEnabled false
         }
         release {
+            signingConfig signingConfigs.pulsoRelease
             minifyEnabled false
         }
     }
